@@ -15,7 +15,6 @@ import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 import { BellIcon, XCircleIcon, ChevronUpIcon, ChevronDownIcon, RefreshCwIcon, DownloadIcon, CalendarIcon, MoonIcon, SunIcon, MenuIcon } from 'lucide-react'
 import { format } from 'date-fns'
 
-
 // Threshold constants
 const THRESHOLDS = {
   VOLTAGE: {
@@ -147,6 +146,9 @@ export default function DashboardComponent() {
       setAlerts(prevAlerts => [...prevAlerts, ...newAlerts])
       if (newAlerts.some(alert => alert.type === 'error')) {
         playErrorSound()
+        sendPushNotification('⚠️ Error Alert', newAlerts.filter(a => a.type === 'error').map(a => a.message).join(', '))
+      } else if (newAlerts.some(alert => alert.type === 'warning')) {
+        sendPushNotification('⚠️ Warning Alert', newAlerts.filter(a => a.type === 'warning').map(a => a.message).join(', '))
       }
     }
 
@@ -185,9 +187,21 @@ export default function DashboardComponent() {
     }
   }, [checkThresholds])
 
+  useEffect(() => {
+    if ('Notification' in window) {
+      Notification.requestPermission()
+    }
+  }, [])
+
   const playErrorSound = () => {
-    const audio = new Audio("/error-sound.mp3")
+    const audio = new Audio('/error-sound.mp3')
     audio.play()
+  }
+
+  const sendPushNotification = (title: string, body: string) => {
+    if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+      new Notification(title, { body })
+    }
   }
 
   const dismissAlert = (index: number) => {
@@ -335,7 +349,7 @@ export default function DashboardComponent() {
                 </PopoverContent>
               </Popover>
               <Button variant="outline" size="sm" onClick={toggleDarkMode}>
-                {isDarkMode ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+                {isDarkMode ? <SunIcon  className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
               </Button>
             </div>
             <div className="sm:hidden">
@@ -353,7 +367,7 @@ export default function DashboardComponent() {
                 Refresh
               </Button>
               <Dialog open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen}>
-                <DialogTrigger  asChild>
+                <DialogTrigger asChild>
                   <Button variant="outline" size="sm">
                     <DownloadIcon className="h-4 w-4 mr-2" />
                     Download CSV
