@@ -1,0 +1,16 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore lock files
+package-lock.json
+pnpm-lock.yaml
+
+# Ignore logs and temporary files
+*.log
+tmp.js
+
+# Ignore CSV files (if temporary, remove if important)
+*.csv
+
+# Ignore environment and config files (adjust if needed)
+.env
